@@ -2,7 +2,7 @@ package com.example.trashwiz.ui
 
 import android.Manifest
 import android.content.Context
-import android.graphics.Bitmap
+import android.graphics.*
 import android.util.Log
 import android.widget.Toast
 import androidx.camera.core.*
@@ -14,13 +14,22 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.navigation.NavController
-import java.util.concurrent.Executors
-import androidx.core.content.ContextCompat
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
+import androidx.navigation.NavController
+import org.tensorflow.lite.support.image.TensorImage
+import org.tensorflow.lite.task.core.BaseOptions
+import org.tensorflow.lite.task.core.vision.ImageProcessingOptions
+import org.tensorflow.lite.task.core.vision.preprocessing.NormalizeOp
+import org.tensorflow.lite.task.vision.classifier.ImageClassifier
+import org.tensorflow.lite.task.vision.classifier.Classifications
+import org.tensorflow.lite.task.vision.classifier.ImageClassifier.ImageClassifierOptions
+import java.io.ByteArrayOutputStream
+import java.io.IOException
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
+import java.util.concurrent.Executors
 
 @Composable
 fun CameraScreen(navController: NavController) {
@@ -63,28 +72,20 @@ fun CameraScreen(navController: NavController) {
 
         Button(
             onClick = {
-                Log.d("anaaaaaaaaaa", "onclick")
+                Log.d("Cameraaaa", "onClick")
                 imageCapture?.takePicture(
-
                     ContextCompat.getMainExecutor(context),
-
                     object : ImageCapture.OnImageCapturedCallback() {
-
                         override fun onCaptureSuccess(image: ImageProxy) {
-                            Log.d("anaaaaaaaaaa", "onCaptureSuccess")
-//                            val bitmap = imageProxyToBitmap(image, context)
+                            Log.d("Cameraaaa", "onCaptureSuccess")
+                            Log.d("Cameraaaa", "image format: ${image.format}, planes: ${image.planes.size}")
+
+                            val bitmap = imageProxyToBitmap(image)
                             image.close()
 
-                            // 👉 空函数调用（后面再加模型处理）
-//                            analyzeImage(bitmap)
-                            Log.d("anaaaaaaaaaa", "close")
-                            // 👉 默认 itemName（可以改成你喜欢的）
-                            val itemName = "Can"
-
-                            // 👉 跳转并传入 itemName
+                            val itemName = analyzeImage(bitmap, context)
                             val encoded = URLEncoder.encode(itemName, StandardCharsets.UTF_8.toString())
                             navController.navigate("result_screen/$encoded")
-
                         }
 
                         override fun onError(exception: ImageCaptureException) {
@@ -102,13 +103,77 @@ fun CameraScreen(navController: NavController) {
     }
 }
 
-// 🟡 空函数占位：之后在这里调用 Lite 模型进行分类识别
-fun analyzeImage(bitmap: Bitmap) {
-    // 以后你会在这里添加模型推理逻辑
-    Log.d("analyzeImage", "识别函数被调用啦（模型后面再加）")
+// ImageProxy 转 Bitmap
+fun imageProxyToBitmap(image: ImageProxy): Bitmap {
+    if (image.format == ImageFormat.JPEG && image.planes.size == 1) {
+        val buffer = image.planes[0].buffer
+        val bytes = ByteArray(buffer.remaining())
+        buffer.get(bytes)
+        return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+    }
+
+    if (image.format == ImageFormat.YUV_420_888 && image.planes.size == 3) {
+        val yBuffer = image.planes[0].buffer
+        val uBuffer = image.planes[1].buffer
+        val vBuffer = image.planes[2].buffer
+
+        val ySize = yBuffer.remaining()
+        val uSize = uBuffer.remaining()
+        val vSize = vBuffer.remaining()
+
+        val nv21 = ByteArray(ySize + uSize + vSize)
+
+        yBuffer.get(nv21, 0, ySize)
+        vBuffer.get(nv21, ySize, vSize)
+        uBuffer.get(nv21, ySize + vSize, uSize)
+
+        val yuvImage = YuvImage(nv21, ImageFormat.NV21, image.width, image.height, null)
+        val out = ByteArrayOutputStream()
+        yuvImage.compressToJpeg(Rect(0, 0, image.width, image.height), 100, out)
+        val imageBytes = out.toByteArray()
+        return BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+    }
+
+    throw IllegalArgumentException("Unsupported image format: ${image.format}, planes: ${image.planes.size}")
 }
 
-// ❗需要你自己实现的函数：ImageProxy 转 Bitmap
-fun imageProxyToBitmap(image: ImageProxy, context: Context) {
-    Log.d("imageProxyToBitmap", "识别函数被调用啦（模型后面再加）")
+// 使用 TFLite 模型进行推理并返回分类名称
+fun analyzeImage(bitmap: Bitmap, context: Context): String {
+    val modelName = "model.tflite"
+    val resultText: String
+
+    try {
+        // ⚠️ 设置归一化：mean=127.5, std=127.5 -> 把像素从[0,255]归一化为[-1,1]
+        val normalizeOp = NormalizeOp(127.5f, 127.5f)
+
+        // 构造归一化选项
+        val baseOptions = BaseOptions.builder().build()
+
+        val options = ImageClassifierOptions.builder()
+            .setBaseOptions(baseOptions)
+            .setMaxResults(1)
+            .setScoreThreshold(0.3f)
+            .setImageProcessingOptions(
+                ImageProcessingOptions.builder()
+                    .addPreprocessingOp(normalizeOp)
+                    .build()
+            )
+            .build()
+
+        val imageClassifier = ImageClassifier.createFromFileAndOptions(context, modelName, options)
+        val tensorImage = TensorImage.fromBitmap(bitmap)
+        val results: List<Classifications> = imageClassifier.classify(tensorImage)
+
+        val topResult = results.firstOrNull()?.categories?.maxByOrNull { it.score }
+        resultText = topResult?.label ?: "Unknown"
+        Log.d("TFLite", "识别结果：$resultText")
+    } catch (e: IOException) {
+        Log.e("TFLite", "模型加载失败：${e.message}")
+        return "Unknown"
+    } catch (e: Exception) {
+        Log.e("TFLite", "推理失败：${e.message}")
+        return "Unknown"
+    }
+
+    return resultText
 }
