@@ -1,6 +1,7 @@
 package com.example.trashwiz
 
 import android.Manifest
+import android.app.Activity
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -21,7 +22,6 @@ import com.example.trashwiz.ui.CameraScreen
 import com.example.trashwiz.ui.MainScreen
 import com.example.trashwiz.ui.ResultScreen
 import com.example.trashwiz.ui.theme.TrashWizTheme
-
 import androidx.activity.compose.rememberLauncherForActivityResult
 
 class MainActivity : ComponentActivity() {
@@ -33,20 +33,25 @@ class MainActivity : ComponentActivity() {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     val navController = rememberNavController()
                     val context = LocalContext.current
+                    val activity = context as? Activity
 
-                    // 👇 权限状态（只请求一次）
+                    var permissionGranted by remember { mutableStateOf(false) }
                     var permissionRequested by remember { mutableStateOf(false) }
 
-                    // 👇 权限请求器
                     val permissionLauncher = rememberLauncherForActivityResult(
                         ActivityResultContracts.RequestPermission()
                     ) { isGranted ->
+                        permissionGranted = isGranted
                         if (!isGranted) {
-                            Toast.makeText(context, "必须允许摄像头权限才能使用拍照功能", Toast.LENGTH_LONG).show()
+                            Toast.makeText(
+                                context,
+                                "未授予摄像头权限，应用将关闭",
+                                Toast.LENGTH_LONG
+                            ).show()
+                            activity?.finish() // 👈 没权限就退出
                         }
                     }
 
-                    // 👇 第一次启动时请求权限
                     LaunchedEffect(Unit) {
                         if (!permissionRequested) {
                             permissionRequested = true
@@ -54,19 +59,21 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
-                    NavHost(navController = navController, startDestination = "main") {
-                        composable("main") {
-                            MainScreen(navController)
-                        }
-                        composable("camera") {
-                            CameraScreen(navController)
-                        }
-                        composable(
-                            route = "result_screen/{itemName}",
-                            arguments = listOf(navArgument("itemName") { type = NavType.StringType })
-                        ) { backStackEntry ->
-                            val itemName = backStackEntry.arguments?.getString("itemName") ?: ""
-                            ResultScreen(navController = navController, itemName = itemName)
+                    if (permissionGranted) {
+                        NavHost(navController = navController, startDestination = "main") {
+                            composable("main") {
+                                MainScreen(navController)
+                            }
+                            composable("camera") {
+                                CameraScreen(navController)
+                            }
+                            composable(
+                                route = "result_screen/{itemName}",
+                                arguments = listOf(navArgument("itemName") { type = NavType.StringType })
+                            ) { backStackEntry ->
+                                val itemName = backStackEntry.arguments?.getString("itemName") ?: ""
+                                ResultScreen(navController = navController, itemName = itemName)
+                            }
                         }
                     }
                 }

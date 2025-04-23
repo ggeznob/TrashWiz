@@ -27,22 +27,20 @@ android {
             )
         }
     }
-
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-
     kotlinOptions {
         jvmTarget = "11"
     }
-
     buildFeatures {
         compose = true
     }
 }
 
 dependencies {
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -74,8 +72,5 @@ dependencies {
 
     // TensorFlow Lite
     implementation(libs.tflite)
-    implementation(libs.tflite.support)
-    implementation(libs.tflite.task.vision)
-    implementation(libs.tflite.task.core) // ✅ 修复命名
 
 }

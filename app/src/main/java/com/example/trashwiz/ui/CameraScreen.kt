@@ -1,6 +1,5 @@
 package com.example.trashwiz.ui
 
-import android.Manifest
 import android.content.Context
 import android.graphics.*
 import android.util.Log
@@ -18,15 +17,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
-import org.tensorflow.lite.support.image.TensorImage
-import org.tensorflow.lite.task.core.BaseOptions
-import org.tensorflow.lite.task.core.vision.ImageProcessingOptions
-import org.tensorflow.lite.task.core.vision.preprocessing.NormalizeOp
-import org.tensorflow.lite.task.vision.classifier.ImageClassifier
-import org.tensorflow.lite.task.vision.classifier.Classifications
-import org.tensorflow.lite.task.vision.classifier.ImageClassifier.ImageClassifierOptions
+import org.tensorflow.lite.Interpreter
 import java.io.ByteArrayOutputStream
+import java.io.FileInputStream
 import java.io.IOException
+import java.nio.MappedByteBuffer
+import java.nio.channels.FileChannel
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.Executors
@@ -52,7 +48,6 @@ fun CameraScreen(navController: NavController) {
                     }
 
                     imageCapture = ImageCapture.Builder().build()
-
                     val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
                     try {
@@ -72,14 +67,10 @@ fun CameraScreen(navController: NavController) {
 
         Button(
             onClick = {
-                Log.d("Cameraaaa", "onClick")
                 imageCapture?.takePicture(
                     ContextCompat.getMainExecutor(context),
                     object : ImageCapture.OnImageCapturedCallback() {
                         override fun onCaptureSuccess(image: ImageProxy) {
-                            Log.d("Cameraaaa", "onCaptureSuccess")
-                            Log.d("Cameraaaa", "image format: ${image.format}, planes: ${image.planes.size}")
-
                             val bitmap = imageProxyToBitmap(image)
                             image.close()
 
@@ -103,7 +94,16 @@ fun CameraScreen(navController: NavController) {
     }
 }
 
-// ImageProxy 转 Bitmap
+fun loadLabelMap(context: Context): Map<Int, String> {
+    val json = context.assets.open("labels.json").bufferedReader().use { it.readText() }
+    val jsonObject = org.json.JSONObject(json)
+    val labelMap = mutableMapOf<Int, String>()
+    jsonObject.keys().forEach { key ->
+        labelMap[key.toInt()] = jsonObject.getString(key)
+    }
+    return labelMap
+}
+
 fun imageProxyToBitmap(image: ImageProxy): Bitmap {
     if (image.format == ImageFormat.JPEG && image.planes.size == 1) {
         val buffer = image.planes[0].buffer
@@ -137,43 +137,42 @@ fun imageProxyToBitmap(image: ImageProxy): Bitmap {
     throw IllegalArgumentException("Unsupported image format: ${image.format}, planes: ${image.planes.size}")
 }
 
-// 使用 TFLite 模型进行推理并返回分类名称
-fun analyzeImage(bitmap: Bitmap, context: Context): String {
-    val modelName = "model.tflite"
-    val resultText: String
-
-    try {
-        // ⚠️ 设置归一化：mean=127.5, std=127.5 -> 把像素从[0,255]归一化为[-1,1]
-        val normalizeOp = NormalizeOp(127.5f, 127.5f)
-
-        // 构造归一化选项
-        val baseOptions = BaseOptions.builder().build()
-
-        val options = ImageClassifierOptions.builder()
-            .setBaseOptions(baseOptions)
-            .setMaxResults(1)
-            .setScoreThreshold(0.3f)
-            .setImageProcessingOptions(
-                ImageProcessingOptions.builder()
-                    .addPreprocessingOp(normalizeOp)
-                    .build()
-            )
-            .build()
-
-        val imageClassifier = ImageClassifier.createFromFileAndOptions(context, modelName, options)
-        val tensorImage = TensorImage.fromBitmap(bitmap)
-        val results: List<Classifications> = imageClassifier.classify(tensorImage)
-
-        val topResult = results.firstOrNull()?.categories?.maxByOrNull { it.score }
-        resultText = topResult?.label ?: "Unknown"
-        Log.d("TFLite", "识别结果：$resultText")
-    } catch (e: IOException) {
-        Log.e("TFLite", "模型加载失败：${e.message}")
-        return "Unknown"
-    } catch (e: Exception) {
-        Log.e("TFLite", "推理失败：${e.message}")
-        return "Unknown"
-    }
-
-    return resultText
+fun loadModelFile(context: Context, modelName: String): MappedByteBuffer {
+    val fileDescriptor = context.assets.openFd(modelName)
+    val inputStream = FileInputStream(fileDescriptor.fileDescriptor)
+    val fileChannel = inputStream.channel
+    return fileChannel.map(FileChannel.MapMode.READ_ONLY, fileDescriptor.startOffset, fileDescriptor.declaredLength)
 }
+
+fun analyzeImage(bitmap: Bitmap, context: Context): String {
+    return try {
+        val interpreter = Interpreter(loadModelFile(context, "model.tflite"))
+        val labelMap = loadLabelMap(context)
+
+        val resizedBitmap = Bitmap.createScaledBitmap(bitmap, 224, 224, true)
+        val input = Array(1) { Array(224) { Array(224) { FloatArray(3) } } }
+        for (y in 0 until 224) {
+            for (x in 0 until 224) {
+                val pixel = resizedBitmap.getPixel(x, y)
+                input[0][y][x][0] = (Color.red(pixel) - 127.5f) / 127.5f
+                input[0][y][x][1] = (Color.green(pixel) - 127.5f) / 127.5f
+                input[0][y][x][2] = (Color.blue(pixel) - 127.5f) / 127.5f
+            }
+        }
+
+        val output = Array(1) { FloatArray(40) }
+        interpreter.run(input, output)
+
+        val maxIndex = output[0].indices.maxByOrNull { output[0][it] } ?: -1
+        val confidence = output[0][maxIndex]
+        val label = labelMap[maxIndex] ?: "Unknown Category"
+
+        // 只在置信度较高时返回，否则返回“未知”
+        if (confidence > 0.3f) "$label (Confidence${"%.1f".format(confidence * 100)}%)"
+        else "Unrecognizable(Confidence:${"%.1f".format(confidence * 100)}%)"
+    } catch (e: Exception) {
+        Log.e("TFLite", "Recognition Failed: ${e.message}")
+        "Recognition Failed"
+    }
+}
+
