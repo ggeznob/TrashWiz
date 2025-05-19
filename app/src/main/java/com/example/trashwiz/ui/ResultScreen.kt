@@ -9,6 +9,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.compose.foundation.Image
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import com.example.trashwiz.R
 
 @Composable
 fun ResultScreen(navController: NavController, itemName: String) {
@@ -25,13 +29,15 @@ fun ResultScreen(navController: NavController, itemName: String) {
         description = "Cans made of aluminum or tinplate are recyclable. Please empty the contents before disposing and do not crush them, as intact cans are easier to process during recycling."
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp)
-    ) {
-        Column(
+    Box(modifier = Modifier.fillMaxSize()) {
+        Image(
+            painter = painterResource(id = R.drawable.result_screen),
+            contentDescription = null,
             modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+        Column(
+            modifier = Modifier.fillMaxSize().padding(24.dp),
             verticalArrangement = Arrangement.SpaceEvenly,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -40,7 +46,8 @@ fun ResultScreen(navController: NavController, itemName: String) {
             Text(
                 text = "Item Recognized: $itemName",
                 style = MaterialTheme.typography.headlineMedium.copy(fontSize = 26.sp),
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                fontFamily = ec_regular
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -50,7 +57,8 @@ fun ResultScreen(navController: NavController, itemName: String) {
                 Text(
                     text = "Category: $category",
                     style = MaterialTheme.typography.headlineSmall.copy(fontSize = 22.sp),
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    fontFamily = dl_regular
                 )
 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -61,7 +69,8 @@ fun ResultScreen(navController: NavController, itemName: String) {
                     textAlign = TextAlign.Start,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 12.dp)
+                        .padding(horizontal = 12.dp),
+                    fontFamily = dl_regular
                 )
             }
 
@@ -73,7 +82,7 @@ fun ResultScreen(navController: NavController, itemName: String) {
                     .fillMaxWidth()
                     .padding(top = 16.dp)
             ) {
-                Text("Back to Main")
+                Text("Back to Main", fontFamily = dl_regular)
             }
         }
     }
