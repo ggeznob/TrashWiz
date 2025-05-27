@@ -25,8 +25,12 @@ fun ResultScreen(navController: NavController, itemName: String) {
 
     // 仅在非无法识别时填充分类和描述内容
     if (!isUnrecognizable) {
+        // 调用数据库查询相应垃圾分类类别 ----------------------------------------------
+
         category = "Recyclable Waste"
         description = "Cans made of aluminum or tinplate are recyclable. Please empty the contents before disposing and do not crush them, as intact cans are easier to process during recycling."
+
+        // -----------------------------------------------------------------------
     }
 
     Box(modifier = Modifier.fillMaxSize()) {

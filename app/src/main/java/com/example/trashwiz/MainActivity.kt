@@ -48,7 +48,7 @@ class MainActivity : ComponentActivity() {
                                 "未授予摄像头权限，应用将关闭",
                                 Toast.LENGTH_LONG
                             ).show()
-                            activity?.finish() // 👈 没权限就退出
+                            activity?.finish() // 没权限就退出
                         }
                     }
 
