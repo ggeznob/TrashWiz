@@ -48,7 +48,7 @@ fun ResultScreen(navController: NavController, itemName: String) {
             Spacer(modifier = Modifier.height(48.dp))
 
             Text(
-                text = "Item Recognized: $itemName",
+                text = "$itemName",
                 style = MaterialTheme.typography.headlineMedium.copy(fontSize = 26.sp),
                 textAlign = TextAlign.Center,
                 fontFamily = ec_regular
@@ -59,7 +59,7 @@ fun ResultScreen(navController: NavController, itemName: String) {
             // 只有当不是无法识别时才显示分类
             if (!isUnrecognizable) {
                 Text(
-                    text = "Category: $category",
+                    text = "$category",
                     style = MaterialTheme.typography.headlineSmall.copy(fontSize = 22.sp),
                     textAlign = TextAlign.Center,
                     fontFamily = dl_regular
@@ -68,7 +68,7 @@ fun ResultScreen(navController: NavController, itemName: String) {
                 Spacer(modifier = Modifier.height(32.dp))
 
                 Text(
-                    text = "Description: $description",
+                    text = "$description",
                     style = MaterialTheme.typography.bodyLarge,
                     textAlign = TextAlign.Start,
                     modifier = Modifier

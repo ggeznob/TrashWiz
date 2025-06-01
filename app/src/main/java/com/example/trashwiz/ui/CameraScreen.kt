@@ -89,7 +89,7 @@ fun CameraScreen(navController: NavController) {
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            Text("Picture and Analyze")
+            Text("Capture & Analyze")
         }
     }
 }

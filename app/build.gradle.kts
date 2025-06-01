@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("org.jetbrains.kotlin.kapt")
 }
 
 android {
@@ -68,7 +69,7 @@ dependencies {
     // Room
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
-    // kapt(libs.androidx.room.compiler) // 如果你用 kapt，再取消注释
+    kapt(libs.androidx.room.compiler) // 如果你用 kapt，再取消注释
 
     // TensorFlow Lite
     implementation(libs.tflite)

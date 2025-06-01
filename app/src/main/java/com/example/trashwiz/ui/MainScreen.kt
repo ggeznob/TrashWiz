@@ -94,7 +94,7 @@ fun MainScreen(navController: NavController) {
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("📷")
+                Text("Identify Trash")
             }
         }
     }
