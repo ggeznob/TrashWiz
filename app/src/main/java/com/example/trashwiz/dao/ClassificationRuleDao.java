@@ -21,6 +21,6 @@ public interface ClassificationRuleDao {
     @Delete
     void delete(ClassificationRuleEntity classificationRuleEntity);
  
-    @Query("SELECT * FROM classification_rule WHERE item_id= :itemId")
-    LiveData<ClassificationRuleEntity> getByItemId(int itemId);
+    @Query("SELECT * FROM classification_rule WHERE item_id= :itemId and region_id=:regionId")
+    LiveData<ClassificationRuleEntity> getByItemId(int itemId,int regionId);
 }

@@ -29,6 +29,9 @@ import com.example.trashwiz.db.AppDatabase
 import com.example.trashwiz.entity.CategoriesEntity
 
 class MainActivity : ComponentActivity() {
+    companion object{
+        var regionName = "";
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

@@ -28,6 +28,7 @@ import com.example.trashwiz.entity.RegionEntity
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import androidx.compose.ui.graphics.Color
+import com.example.trashwiz.MainActivity
 
 val dl_regular = FontFamily(Font(R.font.dl_regular))
 val ec_regular = FontFamily(Font(R.font.ec_regular))
@@ -66,6 +67,7 @@ fun MainScreen(activity: ComponentActivity, navController: NavController, contex
                 Box {
                     OutlinedButton(onClick = { expanded = true }) {
                         Text("Current Region: $selectedRegion")
+                        MainActivity.regionName = selectedRegion
                     }
                     DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                         regionOptions.forEach { region ->

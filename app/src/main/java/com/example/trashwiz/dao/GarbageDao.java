@@ -26,7 +26,7 @@ public interface GarbageDao {
     @Query("SELECT * FROM garbage_items WHERE item_id= :itemId")
     LiveData<GarbageEntity> getByItemId(int itemId);
 
-    @Query("SELECT * FROM garbage_items WHERE tag= :keyword")
+    @Query("SELECT * FROM garbage_items WHERE tag collate nocase = :keyword")
     LiveData<GarbageEntity> getByKeyword(String keyword);
 
     @Query("SELECT * FROM garbage_items")

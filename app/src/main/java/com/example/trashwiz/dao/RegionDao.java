@@ -23,4 +23,9 @@ public interface RegionDao {
  
     @Query("SELECT * FROM region WHERE region_id= :regionId")
     LiveData<RegionEntity> getByRegionId(int regionId);
+
+    @Query("SELECT * FROM region WHERE name= :regionName")
+    LiveData<RegionEntity> getByRegionName(String regionName);
+
+
 }

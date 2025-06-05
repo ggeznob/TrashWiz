@@ -43,10 +43,10 @@ public class MyApp extends Application {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    regionDao.insert(new RegionEntity(0,"Guangzhou"));
-                    regionDao.insert(new RegionEntity(1,"Shenzhen"));
-                    regionDao.insert(new RegionEntity(2,"Shanghai"));
-                    regionDao.insert(new RegionEntity(3,"Beijing"));
+                    regionDao.insert(new RegionEntity(0,"GuangZhou"));
+                    regionDao.insert(new RegionEntity(1,"ShenZhen"));
+                    regionDao.insert(new RegionEntity(2,"ShangHai"));
+                    regionDao.insert(new RegionEntity(3,"BeiJing"));
 
                     List<String> l = WasteConstants.getCates();
                     categoriesDao.insert(new CategoriesEntity(0,l.get(0),WasteConstants.Residual_DESCS));

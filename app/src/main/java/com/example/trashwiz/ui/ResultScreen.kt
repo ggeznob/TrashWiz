@@ -24,6 +24,7 @@ import com.example.trashwiz.entity.GarbageEntity
 import com.example.trashwiz.entity.RegionEntity
 import org.w3c.dom.Text
 import androidx.compose.ui.graphics.Color
+import com.example.trashwiz.MainActivity
 
 @Composable
 fun ResultScreen(activity: ComponentActivity,navController: NavController, itemName: String) {
@@ -118,37 +119,53 @@ fun ResultScreen(activity: ComponentActivity,navController: NavController, itemN
         .observe(activity, object : Observer<GarbageEntity?> {
             override fun onChanged(value: GarbageEntity?) {
                 if (value == null) {
-                    AlertDialog.Builder(activity)
-                        .setTitle("Tips")
-                        .setMessage("No Result")
-                        .setPositiveButton("OK",null)
-                        .setOnDismissListener {
-                            navController.navigate("main")
-                        }
-                        .show();
+                    showTips()
                     return
                 }
-                classificationRuleDao.getByItemId(value.item_id)
-                    .observe(activity, object : Observer<ClassificationRuleEntity?> {
+               var garbage = value
+                regionDao.getByRegionName(MainActivity.regionName).observe(activity,
+                    object : Observer<RegionEntity?>{
+                        override fun onChanged(value: RegionEntity?) {
+                            if (value == null) {
+                                showTips()
+                                return
+                            }
+                            classificationRuleDao.getByItemId(garbage.item_id,value!!.region_id)
+                                .observe(activity, object : Observer<ClassificationRuleEntity?> {
 
-                        override fun onChanged(value: ClassificationRuleEntity?) {
-                            regionDao.getByRegionId(value!!.region_id)
-                                .observe(activity, object : Observer<RegionEntity?> {
-
-                                    override fun onChanged(value: RegionEntity?) {
-                                        regionName = value!!.name
-
-                                    }
-                                })
-                            categoriesDao.getByCateId(value!!.category_id)
-                                .observe(activity, object : Observer<CategoriesEntity?> {
-                                    override fun onChanged(value: CategoriesEntity?) {
-                                        cateName = value!!.name
-                                        cateDesc = value!!.description
+                                    override fun onChanged(value: ClassificationRuleEntity?) {
+                                        if (value == null) {
+                                            showTips()
+                                            return
+                                        }
+                                        categoriesDao.getByCateId(value!!.category_id)
+                                            .observe(activity, object : Observer<CategoriesEntity?> {
+                                                override fun onChanged(value: CategoriesEntity?) {
+                                                    if (value == null) {
+                                                        showTips()
+                                                        return
+                                                    }
+                                                    cateName = value!!.name
+                                                    cateDesc = value!!.description
+                                                }
+                                            })
                                     }
                                 })
                         }
+
                     })
+
+            }
+
+            private fun showTips() {
+                AlertDialog.Builder(activity)
+                    .setTitle("Tips")
+                    .setMessage("No Result")
+                    .setPositiveButton("OK",null)
+                    .setOnDismissListener {
+                        navController.navigate("main")
+                    }
+                    .show();
             }
         })
 }
