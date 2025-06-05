@@ -6,7 +6,7 @@ import java.util.List;
 
 public class WasteConstants {
     public static final List<String> cates = Arrays.asList(
-            "Other Waste",
+            "Residual Waste",
             "Kitchen Waste",
             "Recyclable Waste",
             "Hazardous Waste"
@@ -17,12 +17,12 @@ public class WasteConstants {
     }
 
     public static final String garbage = "{\n" +
-            "  \"0\": \"Other Waste/Disposable Lunch Box\",\n" +
-            "  \"1\": \"Other Waste/Contaminated Plastic\",\n" +
-            "  \"2\": \"Other Waste/Cigarette Butt\",\n" +
-            "  \"3\": \"Other Waste/Toothpick\",\n" +
-            "  \"4\": \"Other Waste/Broken Flowerpot and Tableware\",\n" +
-            "  \"5\": \"Other Waste/Bamboo Chopsticks\",\n" +
+            "  \"0\": \"Residual Waste/Disposable Lunch Box\",\n" +
+            "  \"1\": \"Residual Waste/Contaminated Plastic\",\n" +
+            "  \"2\": \"Residual Waste/Cigarette Butt\",\n" +
+            "  \"3\": \"Residual Waste/Toothpick\",\n" +
+            "  \"4\": \"Residual Waste/Broken Flowerpot and Tableware\",\n" +
+            "  \"5\": \"Residual Waste/Bamboo Chopsticks\",\n" +
             "  \"6\": \"Kitchen Waste/Leftover Food\",\n" +
             "  \"7\": \"Kitchen Waste/Large Bones\",\n" +
             "  \"8\": \"Kitchen Waste/Fruit Peel\",\n" +
@@ -59,12 +59,12 @@ public class WasteConstants {
             "  \"39\": \"Hazardous Waste/Expired Medicine\"\n" +
             "}";
 
-    public static final String CATE_DESCS = "其他垃圾（Residual Waste）\n" +
-            "Non-recyclable waste with minimal harm but no reuse value, including contaminated tissues, plastic bags, and packaging. Typically processed via landfill or incineration.\n" +
-            "厨余垃圾（Kitchen Waste）\n" +
-            "Organic waste from food residues, peels, eggshells, and expired food. Suitable for composting or biodegradation to reduce landfill burden.\n" +
-            "可回收物（Recyclable Waste）\n" +
-            "Materials like metals, paper, glass, and clean plastics that can be reprocessed into new products. Proper sorting reduces resource consumption and environmental pollution.\n" +
-            "有害垃圾（Hazardous Waste）\n" +
+    public static final String Residual_DESCS =
+            "Non-recyclable waste with minimal harm but no reuse value, including contaminated tissues, plastic bags, and packaging. Typically processed via landfill or incineration.";
+    public static final String Kitchen_DESCS =
+            "Organic waste from food residues, peels, eggshells, and expired food. Suitable for composting or biodegradation to reduce landfill burden.";
+    public static final String Recyclable_DESCS =
+            "Materials like metals, paper, glass, and clean plastics that can be reprocessed into new products. Proper sorting reduces resource consumption and environmental pollution.";
+    public static final String Hazardous_DESCS =
             "Toxic substances including batteries, expired medicines, and chemical products. Requires specialized disposal to prevent health risks and ecosystem damage.";
 }

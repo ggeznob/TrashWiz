@@ -1,5 +1,6 @@
 package com.example.trashwiz.ui
 
+import android.app.AlertDialog
 import android.text.TextUtils
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.Image
@@ -117,6 +118,14 @@ fun ResultScreen(activity: ComponentActivity,navController: NavController, itemN
         .observe(activity, object : Observer<GarbageEntity?> {
             override fun onChanged(value: GarbageEntity?) {
                 if (value == null) {
+                    AlertDialog.Builder(activity)
+                        .setTitle("Tips")
+                        .setMessage("No Result")
+                        .setPositiveButton("OK",null)
+                        .setOnDismissListener {
+                            navController.navigate("main")
+                        }
+                        .show();
                     return
                 }
                 classificationRuleDao.getByItemId(value.item_id)

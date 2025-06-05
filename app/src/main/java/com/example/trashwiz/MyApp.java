@@ -47,10 +47,16 @@ public class MyApp extends Application {
                     regionDao.insert(new RegionEntity(1,"Shenzhen"));
                     regionDao.insert(new RegionEntity(2,"Shanghai"));
                     regionDao.insert(new RegionEntity(3,"Beijing"));
+
                     List<String> l = WasteConstants.getCates();
-                    for (int j = 0; j < l.size(); j++) {
-                        categoriesDao.insert(new CategoriesEntity(j,l.get(j),WasteConstants.CATE_DESCS));
-                    }
+                    categoriesDao.insert(new CategoriesEntity(0,l.get(0),WasteConstants.Residual_DESCS));
+                    categoriesDao.insert(new CategoriesEntity(1,l.get(1),WasteConstants.Kitchen_DESCS));
+                    categoriesDao.insert(new CategoriesEntity(2,l.get(2),WasteConstants.Recyclable_DESCS));
+                    categoriesDao.insert(new CategoriesEntity(3,l.get(3),WasteConstants.Hazardous_DESCS));
+//
+//                    for (int j = 0; j < l.size(); j++) {
+//                        categoriesDao.insert(new CategoriesEntity(j,l.get(j),WasteConstants.Residual_DESCS));
+//                    }
                     try {
                         JSONObject jsonObject = new JSONObject(WasteConstants.garbage);
                         Iterator<String> it = jsonObject.keys();

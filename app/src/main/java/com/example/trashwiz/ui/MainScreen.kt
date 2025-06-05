@@ -2,6 +2,7 @@ package com.example.trashwiz.ui
 
 import android.content.Context
 import android.text.TextUtils
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -107,52 +108,12 @@ fun MainScreen(activity: ComponentActivity, navController: NavController, contex
                     val regionDao = db.regionDao()
                     val categoriesDao = db.categoriesDao()
                     var s = queryText
-                    garbageDao.getByKeyword(s.replace(" ", ""))
-                        .observe(activity, object : Observer<GarbageEntity?> {
-                            override fun onChanged(value: GarbageEntity?) {
-                                if (value == null) {
-                                    return
-                                }
-                                classificationRuleDao.getByItemId(value.item_id)
-                                    .observe(activity, object : Observer<ClassificationRuleEntity?> {
-
-                                        override fun onChanged(value: ClassificationRuleEntity?) {
-                                            regionDao.getByRegionId(value!!.region_id)
-                                                .observe(activity, object : Observer<RegionEntity?> {
-
-                                                    override fun onChanged(value: RegionEntity?) {
-                                                        regionName = value!!.name
-                                                        if (!TextUtils.isEmpty(regionName) && !TextUtils.isEmpty(
-                                                                cateName
-                                                            ) && !TextUtils.isEmpty(cateDesc)
-                                                        ) {
-                                                            cateName = "0"
-                                                            cateDesc = "0"
-                                                            navController.navigate("result_screen/"+queryText)
-                                                        }
-                                                    }
-                                                })
-                                            categoriesDao.getByCateId(value!!.category_id)
-                                                .observe(activity, object : Observer<CategoriesEntity?> {
-                                                    override fun onChanged(value: CategoriesEntity?) {
-                                                        cateName = value!!.name
-                                                        cateDesc = value!!.description
-                                                        if (!TextUtils.isEmpty(regionName) && !TextUtils.isEmpty(
-                                                                cateName
-                                                            ) && !TextUtils.isEmpty(cateDesc)
-                                                        ) {
-                                                            cateName = "0"
-                                                            cateDesc = "0"
-//                                                            navController.navigate("result_screen/"+queryText+"/"+cateName+"/"+cateDesc)
-                                                            navController.navigate("result_screen/"+queryText)
-
-                                                        }
-                                                    }
-                                                })
-                                        }
-                                    })
-                            }
-                        })
+                    if (TextUtils.isEmpty(s)) {
+                        Toast.makeText(activity,"the keyword must not be empty",Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
+                    navController.navigate("result_screen/"+queryText)
+//
 //                    Toast.makeText(ctx,queryText,Toast.LENGTH_SHORT).show()
                 },
                 modifier = Modifier.fillMaxWidth()
