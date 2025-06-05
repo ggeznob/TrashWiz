@@ -23,6 +23,10 @@ import com.example.trashwiz.ui.MainScreen
 import com.example.trashwiz.ui.ResultScreen
 import com.example.trashwiz.ui.theme.TrashWizTheme
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.lifecycle.Observer
+import androidx.navigation.NavHost
+import com.example.trashwiz.db.AppDatabase
+import com.example.trashwiz.entity.CategoriesEntity
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,17 +66,20 @@ class MainActivity : ComponentActivity() {
                     if (permissionGranted) {
                         NavHost(navController = navController, startDestination = "main") {
                             composable("main") {
-                                MainScreen(navController)
+                                MainScreen(this@MainActivity,navController,this@MainActivity)
                             }
                             composable("camera") {
                                 CameraScreen(navController)
                             }
+
                             composable(
                                 route = "result_screen/{itemName}",
                                 arguments = listOf(navArgument("itemName") { type = NavType.StringType })
                             ) { backStackEntry ->
                                 val itemName = backStackEntry.arguments?.getString("itemName") ?: ""
-                                ResultScreen(navController = navController, itemName = itemName)
+//                                val cateName = backStackEntry.arguments?.getString("cateName") ?: ""
+//                                val cateDesc = backStackEntry.arguments?.getString("cateDesc") ?: ""
+                                ResultScreen(this@MainActivity,navController = navController, itemName = itemName)
                             }
                         }
                     }

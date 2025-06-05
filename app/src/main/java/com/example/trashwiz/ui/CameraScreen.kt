@@ -75,7 +75,11 @@ fun CameraScreen(navController: NavController) {
                             image.close()
 
                             val itemName = analyzeImage(bitmap, context)
+                            Log.d("itemname___", "itemName")
+                            Log.d("itemname___", itemName)
                             val encoded = URLEncoder.encode(itemName, StandardCharsets.UTF_8.toString())
+                            Log.d("itemname___", "encoded")
+                            Log.d("itemname___", encoded)
                             navController.navigate("result_screen/$encoded")
                         }
 
@@ -89,7 +93,7 @@ fun CameraScreen(navController: NavController) {
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            Text("Capture & Analyze")
+            Text("Picture and Analyze")
         }
     }
 }
@@ -168,8 +172,8 @@ fun analyzeImage(bitmap: Bitmap, context: Context): String {
         val label = labelMap[maxIndex] ?: "Unknown Category"
 
         // 只在置信度较高时返回，否则返回“未知”
-        if (confidence > 0.3f) "$label (Confidence${"%.1f".format(confidence * 100)}%)"
-        else "Unrecognizable(Confidence:${"%.1f".format(confidence * 100)}%)"
+        if (confidence > 0.01f) label
+        else "Unrecognizable"
     } catch (e: Exception) {
         Log.e("TFLite", "Recognition Failed: ${e.message}")
         "Recognition Failed"

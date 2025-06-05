@@ -1,35 +1,46 @@
 package com.example.trashwiz.ui
-import com.example.trashwiz.R
 
+import android.content.Context
+import android.text.TextUtils
+import androidx.activity.ComponentActivity
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.foundation.Image
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Observer
+import androidx.navigation.NavController
+import com.example.trashwiz.R
+import com.example.trashwiz.db.AppDatabase
+import com.example.trashwiz.entity.CategoriesEntity
+import com.example.trashwiz.entity.ClassificationRuleEntity
+import com.example.trashwiz.entity.GarbageEntity
+import com.example.trashwiz.entity.RegionEntity
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
+import androidx.compose.ui.graphics.Color
 
 val dl_regular = FontFamily(Font(R.font.dl_regular))
 val ec_regular = FontFamily(Font(R.font.ec_regular))
 
 @Composable
-fun MainScreen(navController: NavController) {
+fun MainScreen(activity: ComponentActivity, navController: NavController, context: Context?) {
     var selectedRegion by remember { mutableStateOf("BeiJing") }
     val regionOptions = listOf("BeiJing", "ShangHai", "GuangZhou", "ShenZhen")
     var expanded by remember { mutableStateOf(false) }
-
+    var regionName = ""
+    var cateName = ""
+    var cateDesc = ""
     var queryText by remember { mutableStateOf("") }
-
+    var ctx = context
     Box(modifier = Modifier.fillMaxSize()) {
         // 背景图片
         Image(
@@ -90,12 +101,80 @@ fun MainScreen(navController: NavController) {
 
             Button(
                 onClick = {
+                    val db = AppDatabase.getDatabase(activity)
+                    val classificationRuleDao = db.classificationRuleDao()
+                    val garbageDao = db.garbageDao()
+                    val regionDao = db.regionDao()
+                    val categoriesDao = db.categoriesDao()
+                    var s = queryText
+                    garbageDao.getByKeyword(s.replace(" ", ""))
+                        .observe(activity, object : Observer<GarbageEntity?> {
+                            override fun onChanged(value: GarbageEntity?) {
+                                if (value == null) {
+                                    return
+                                }
+                                classificationRuleDao.getByItemId(value.item_id)
+                                    .observe(activity, object : Observer<ClassificationRuleEntity?> {
+
+                                        override fun onChanged(value: ClassificationRuleEntity?) {
+                                            regionDao.getByRegionId(value!!.region_id)
+                                                .observe(activity, object : Observer<RegionEntity?> {
+
+                                                    override fun onChanged(value: RegionEntity?) {
+                                                        regionName = value!!.name
+                                                        if (!TextUtils.isEmpty(regionName) && !TextUtils.isEmpty(
+                                                                cateName
+                                                            ) && !TextUtils.isEmpty(cateDesc)
+                                                        ) {
+                                                            cateName = "0"
+                                                            cateDesc = "0"
+                                                            navController.navigate("result_screen/"+queryText)
+                                                        }
+                                                    }
+                                                })
+                                            categoriesDao.getByCateId(value!!.category_id)
+                                                .observe(activity, object : Observer<CategoriesEntity?> {
+                                                    override fun onChanged(value: CategoriesEntity?) {
+                                                        cateName = value!!.name
+                                                        cateDesc = value!!.description
+                                                        if (!TextUtils.isEmpty(regionName) && !TextUtils.isEmpty(
+                                                                cateName
+                                                            ) && !TextUtils.isEmpty(cateDesc)
+                                                        ) {
+                                                            cateName = "0"
+                                                            cateDesc = "0"
+//                                                            navController.navigate("result_screen/"+queryText+"/"+cateName+"/"+cateDesc)
+                                                            navController.navigate("result_screen/"+queryText)
+
+                                                        }
+                                                    }
+                                                })
+                                        }
+                                    })
+                            }
+                        })
+//                    Toast.makeText(ctx,queryText,Toast.LENGTH_SHORT).show()
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("查询结果")
+            }
+
+            Button(
+                onClick = {
                     navController.navigate("camera")
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Identify Trash")
+                Text("📷")
             }
         }
     }
+
+    fun getClassification(activity: ComponentActivity,garbageEntity: GarbageEntity) {
+
+
+    }
+
+
 }
