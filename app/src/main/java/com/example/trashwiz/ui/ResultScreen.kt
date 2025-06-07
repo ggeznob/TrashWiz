@@ -1,7 +1,6 @@
 package com.example.trashwiz.ui
 
 import android.app.AlertDialog
-import android.text.TextUtils
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -22,30 +21,15 @@ import com.example.trashwiz.entity.CategoriesEntity
 import com.example.trashwiz.entity.ClassificationRuleEntity
 import com.example.trashwiz.entity.GarbageEntity
 import com.example.trashwiz.entity.RegionEntity
-import org.w3c.dom.Text
 import androidx.compose.ui.graphics.Color
 import com.example.trashwiz.MainActivity
 
 @Composable
 fun ResultScreen(activity: ComponentActivity,navController: NavController, itemName: String) {
-    val coroutineScope = rememberCoroutineScope()
-    var category by remember { mutableStateOf("Loading...") }
-    var description by remember { mutableStateOf("Loading...") }
-    var regionName by remember { mutableStateOf("") }
     var cateName by remember { mutableStateOf("") }
     var cateDesc by remember { mutableStateOf("") }
-    // 判定是否为无法识别的情况
     val isUnrecognizable = itemName.startsWith("Unrecognizable") || itemName == "Recognition Failed"
 
-    // 仅在非无法识别时填充分类和描述内容
-    if (!isUnrecognizable) {
-        // 调用数据库查询相应垃圾分类类别 ----------------------------------------------
-
-        category = "Recyclable Waste"
-        description = "Cans made of aluminum or tinplate are recyclable. Please empty the contents before disposing and do not crush them, as intact cans are easier to process during recycling."
-
-        // -----------------------------------------------------------------------
-    }
     val db = AppDatabase.getDatabase(activity)
     val classificationRuleDao = db.classificationRuleDao()
     val garbageDao = db.garbageDao()
@@ -69,8 +53,8 @@ fun ResultScreen(activity: ComponentActivity,navController: NavController, itemN
             Spacer(modifier = Modifier.height(48.dp))
 
             Text(
-                text = "Item Recognized: $s",
-                style = MaterialTheme.typography.headlineMedium.copy(fontSize = 26.sp),
+                text = s,
+                style = MaterialTheme.typography.headlineMedium.copy(fontSize = 33.sp),
                 textAlign = TextAlign.Center,
                 fontFamily = ec_regular,
                 color = Color.Black
@@ -78,10 +62,9 @@ fun ResultScreen(activity: ComponentActivity,navController: NavController, itemN
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 只有当不是无法识别时才显示分类
             if (!isUnrecognizable) {
                 Text(
-                    text = "Category: $cateName",
+                    text = cateName,
                     style = MaterialTheme.typography.headlineSmall.copy(fontSize = 22.sp),
                     textAlign = TextAlign.Center,
                     fontFamily = dl_regular,
@@ -91,7 +74,7 @@ fun ResultScreen(activity: ComponentActivity,navController: NavController, itemN
                 Spacer(modifier = Modifier.height(32.dp))
 
                 Text(
-                    text = "Description: $cateDesc",
+                    text = cateDesc,
                     style = MaterialTheme.typography.bodyLarge,
                     textAlign = TextAlign.Start,
                     modifier = Modifier

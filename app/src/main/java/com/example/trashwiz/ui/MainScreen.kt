@@ -17,14 +17,8 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Observer
 import androidx.navigation.NavController
 import com.example.trashwiz.R
-import com.example.trashwiz.db.AppDatabase
-import com.example.trashwiz.entity.CategoriesEntity
-import com.example.trashwiz.entity.ClassificationRuleEntity
-import com.example.trashwiz.entity.GarbageEntity
-import com.example.trashwiz.entity.RegionEntity
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import androidx.compose.ui.graphics.Color
@@ -38,9 +32,6 @@ fun MainScreen(activity: ComponentActivity, navController: NavController, contex
     var selectedRegion by remember { mutableStateOf("BeiJing") }
     val regionOptions = listOf("BeiJing", "ShangHai", "GuangZhou", "ShenZhen")
     var expanded by remember { mutableStateOf(false) }
-    var regionName = ""
-    var cateName = ""
-    var cateDesc = ""
     var queryText by remember { mutableStateOf("") }
     var ctx = context
     Box(modifier = Modifier.fillMaxSize()) {
@@ -62,11 +53,10 @@ fun MainScreen(activity: ComponentActivity, navController: NavController, contex
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text("TrashWiz", style = MaterialTheme.typography.headlineMedium, fontFamily = ec_regular)
-
+                Text("TrashWiz", style = MaterialTheme.typography.headlineMedium, fontFamily = ec_regular, color = Color.Black)
                 Box {
                     OutlinedButton(onClick = { expanded = true }) {
-                        Text("Current Region: $selectedRegion")
+                        Text("Region: $selectedRegion", fontFamily = dl_regular, color = Color.Black)
                         MainActivity.regionName = selectedRegion
                     }
                     DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
@@ -88,7 +78,7 @@ fun MainScreen(activity: ComponentActivity, navController: NavController, contex
             OutlinedTextField(
                 value = queryText,
                 onValueChange = { queryText = it },
-                label = { Text("Enter the object's name", fontFamily = dl_regular) },
+                label = { Text("Enter the object's name", fontFamily = dl_regular, color = Color.Black) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
@@ -104,23 +94,16 @@ fun MainScreen(activity: ComponentActivity, navController: NavController, contex
 
             Button(
                 onClick = {
-                    val db = AppDatabase.getDatabase(activity)
-                    val classificationRuleDao = db.classificationRuleDao()
-                    val garbageDao = db.garbageDao()
-                    val regionDao = db.regionDao()
-                    val categoriesDao = db.categoriesDao()
                     var s = queryText
                     if (TextUtils.isEmpty(s)) {
                         Toast.makeText(activity,"the keyword must not be empty",Toast.LENGTH_SHORT).show()
                         return@Button
                     }
                     navController.navigate("result_screen/"+queryText)
-//
-//                    Toast.makeText(ctx,queryText,Toast.LENGTH_SHORT).show()
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("查询结果")
+                Text("Search Result")
             }
 
             Button(
@@ -129,15 +112,8 @@ fun MainScreen(activity: ComponentActivity, navController: NavController, contex
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("📷")
+                Text("Identify Trash")
             }
         }
     }
-
-    fun getClassification(activity: ComponentActivity,garbageEntity: GarbageEntity) {
-
-
-    }
-
-
 }

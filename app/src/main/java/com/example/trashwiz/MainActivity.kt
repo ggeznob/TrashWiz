@@ -12,7 +12,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -23,11 +22,6 @@ import com.example.trashwiz.ui.MainScreen
 import com.example.trashwiz.ui.ResultScreen
 import com.example.trashwiz.ui.theme.TrashWizTheme
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.lifecycle.Observer
-import androidx.navigation.NavHost
-import com.example.trashwiz.db.AppDatabase
-import com.example.trashwiz.entity.CategoriesEntity
-
 class MainActivity : ComponentActivity() {
     companion object{
         var regionName = "";
@@ -52,10 +46,10 @@ class MainActivity : ComponentActivity() {
                         if (!isGranted) {
                             Toast.makeText(
                                 context,
-                                "未授予摄像头权限，应用将关闭",
+                                "Camera access was not granted. The application will now exit.",
                                 Toast.LENGTH_LONG
                             ).show()
-                            activity?.finish() // 没权限就退出
+                            activity?.finish()
                         }
                     }
 
@@ -80,8 +74,6 @@ class MainActivity : ComponentActivity() {
                                 arguments = listOf(navArgument("itemName") { type = NavType.StringType })
                             ) { backStackEntry ->
                                 val itemName = backStackEntry.arguments?.getString("itemName") ?: ""
-//                                val cateName = backStackEntry.arguments?.getString("cateName") ?: ""
-//                                val cateDesc = backStackEntry.arguments?.getString("cateDesc") ?: ""
                                 ResultScreen(this@MainActivity,navController = navController, itemName = itemName)
                             }
                         }
