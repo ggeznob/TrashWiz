@@ -26,23 +26,33 @@ import com.example.trashwiz.MainActivity
 
 @Composable
 fun ResultScreen(activity: ComponentActivity,navController: NavController, itemName: String) {
+    // State variables to hold category name and description
     var cateName by remember { mutableStateOf("") }
     var cateDesc by remember { mutableStateOf("") }
+    // Check if the recognition failed or item is unrecognized
     val isUnrecognizable = itemName.startsWith("Unrecognizable") || itemName == "Recognition Failed"
 
+    // Initialize Room database DAOs
     val db = AppDatabase.getDatabase(activity)
     val classificationRuleDao = db.classificationRuleDao()
     val garbageDao = db.garbageDao()
     val regionDao = db.regionDao()
     val categoriesDao = db.categoriesDao()
+
+    // Decode the item name (handle '+' from URL encoding)
     var s = itemName.replace("+", " ")
+
+    // Fullscreen background layout
     Box(modifier = Modifier.fillMaxSize()) {
+        // Background image
         Image(
             painter = painterResource(id = R.drawable.result_screen),
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
+
+        // Main content layout
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -52,6 +62,7 @@ fun ResultScreen(activity: ComponentActivity,navController: NavController, itemN
         ) {
             Spacer(modifier = Modifier.height(48.dp))
 
+            // Display recognized item name
             Text(
                 text = s,
                 style = MaterialTheme.typography.headlineMedium.copy(fontSize = 33.sp),
@@ -62,6 +73,7 @@ fun ResultScreen(activity: ComponentActivity,navController: NavController, itemN
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            // Display category name and description if recognition succeeded
             if (!isUnrecognizable) {
                 Text(
                     text = cateName,
@@ -87,6 +99,7 @@ fun ResultScreen(activity: ComponentActivity,navController: NavController, itemN
 
             Spacer(modifier = Modifier.weight(1f))
 
+            // Button to return to main screen
             Button(
                 onClick = { navController.navigate("main") },
                 modifier = Modifier
@@ -98,14 +111,18 @@ fun ResultScreen(activity: ComponentActivity,navController: NavController, itemN
         }
     }
 
+    // Query the garbage item by keyword
     garbageDao.getByKeyword(s.replace(" ", ""))
         .observe(activity, object : Observer<GarbageEntity?> {
             override fun onChanged(value: GarbageEntity?) {
                 if (value == null) {
+                    // Show alert if not found
                     showTips()
                     return
                 }
-               var garbage = value
+                var garbage = value
+
+                // Query the current region
                 regionDao.getByRegionName(MainActivity.regionName).observe(activity,
                     object : Observer<RegionEntity?>{
                         override fun onChanged(value: RegionEntity?) {
@@ -113,6 +130,7 @@ fun ResultScreen(activity: ComponentActivity,navController: NavController, itemN
                                 showTips()
                                 return
                             }
+                            // Query classification rule based on item and region
                             classificationRuleDao.getByItemId(garbage.item_id,value!!.region_id)
                                 .observe(activity, object : Observer<ClassificationRuleEntity?> {
 
@@ -121,6 +139,7 @@ fun ResultScreen(activity: ComponentActivity,navController: NavController, itemN
                                             showTips()
                                             return
                                         }
+                                        // Query category details
                                         categoriesDao.getByCateId(value!!.category_id)
                                             .observe(activity, object : Observer<CategoriesEntity?> {
                                                 override fun onChanged(value: CategoriesEntity?) {
@@ -128,6 +147,7 @@ fun ResultScreen(activity: ComponentActivity,navController: NavController, itemN
                                                         showTips()
                                                         return
                                                     }
+                                                    // Set the final display content
                                                     cateName = value!!.name
                                                     cateDesc = value!!.description
                                                 }
@@ -140,6 +160,7 @@ fun ResultScreen(activity: ComponentActivity,navController: NavController, itemN
 
             }
 
+            // Display a dialog if the recognition or query fails
             private fun showTips() {
                 AlertDialog.Builder(activity)
                     .setTitle("Tips")

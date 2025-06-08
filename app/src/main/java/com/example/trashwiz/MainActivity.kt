@@ -24,6 +24,7 @@ import com.example.trashwiz.ui.theme.TrashWizTheme
 import androidx.activity.compose.rememberLauncherForActivityResult
 class MainActivity : ComponentActivity() {
     companion object{
+        // Global variable to store the selected region name
         var regionName = "";
     }
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,17 +33,22 @@ class MainActivity : ComponentActivity() {
         setContent {
             TrashWizTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
+                    // Create navigation controller
                     val navController = rememberNavController()
                     val context = LocalContext.current
                     val activity = context as? Activity
 
+                    // State to track if permission is granted
                     var permissionGranted by remember { mutableStateOf(false) }
+                    // State to ensure permission is only requested once
                     var permissionRequested by remember { mutableStateOf(false) }
 
+                    // Permission launcher for requesting camera access
                     val permissionLauncher = rememberLauncherForActivityResult(
                         ActivityResultContracts.RequestPermission()
                     ) { isGranted ->
                         permissionGranted = isGranted
+                        // Show message and close app if permission is denied
                         if (!isGranted) {
                             Toast.makeText(
                                 context,
@@ -53,6 +59,7 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
+                    // Launch camera permission request only once
                     LaunchedEffect(Unit) {
                         if (!permissionRequested) {
                             permissionRequested = true
@@ -60,15 +67,19 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
+                    // Show navigation host only if permission is granted
                     if (permissionGranted) {
                         NavHost(navController = navController, startDestination = "main") {
+                            // Main screen route
                             composable("main") {
                                 MainScreen(this@MainActivity,navController,this@MainActivity)
                             }
+                            // Camera screen route
                             composable("camera") {
                                 CameraScreen(navController)
                             }
 
+                            // Result screen route with item name argument
                             composable(
                                 route = "result_screen/{itemName}",
                                 arguments = listOf(navArgument("itemName") { type = NavType.StringType })

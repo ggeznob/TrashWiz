@@ -28,28 +28,35 @@ import java.util.concurrent.Executors
 
 @Composable
 fun CameraScreen(navController: NavController) {
+    // Get current context and lifecycle
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
-    val executor = remember { Executors.newSingleThreadExecutor() }
+//    val executor = remember { Executors.newSingleThreadExecutor() }
 
+    // Holds reference to ImageCapture instance
     var imageCapture by remember { mutableStateOf<ImageCapture?>(null) }
 
     Column(modifier = Modifier.fillMaxSize()) {
+        // Preview camera feed
         AndroidView(
             modifier = Modifier.weight(1f),
             factory = { ctx ->
                 val previewView = PreviewView(ctx)
                 cameraProviderFuture.addListener({
                     val cameraProvider = cameraProviderFuture.get()
+
+                    // Set up camera preview
                     val preview = Preview.Builder().build().also {
                         it.setSurfaceProvider(previewView.surfaceProvider)
                     }
 
+                    // Set up image capture
                     imageCapture = ImageCapture.Builder().build()
                     val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
                     try {
+                        // Bind camera lifecycle to the view
                         cameraProvider.unbindAll()
                         cameraProvider.bindToLifecycle(
                             lifecycleOwner, cameraSelector, preview, imageCapture
@@ -64,21 +71,23 @@ fun CameraScreen(navController: NavController) {
             }
         )
 
+        // Button to capture image and run analysis
         Button(
             onClick = {
                 imageCapture?.takePicture(
                     ContextCompat.getMainExecutor(context),
                     object : ImageCapture.OnImageCapturedCallback() {
                         override fun onCaptureSuccess(image: ImageProxy) {
+                            // Convert camera image to Bitmap
                             val bitmap = imageProxyToBitmap(image)
                             image.close()
 
+                            // Analyze the image using ML model
                             val itemName = analyzeImage(bitmap, context)
-                            Log.d("itemname___", "itemName")
-                            Log.d("itemname___", itemName)
+
+                            // Encode result and navigate to result screen
                             val encoded = URLEncoder.encode(itemName, StandardCharsets.UTF_8.toString())
-                            Log.d("itemname___", "encoded")
-                            Log.d("itemname___", encoded)
+
                             navController.navigate("result_screen/$encoded")
                         }
 
@@ -97,6 +106,7 @@ fun CameraScreen(navController: NavController) {
     }
 }
 
+// Load label map from assets/labels.json
 fun loadLabelMap(context: Context): Map<Int, String> {
     val json = context.assets.open("labels.json").bufferedReader().use { it.readText() }
     val jsonObject = org.json.JSONObject(json)
@@ -107,7 +117,9 @@ fun loadLabelMap(context: Context): Map<Int, String> {
     return labelMap
 }
 
+// Convert ImageProxy to Bitmap format for processing
 fun imageProxyToBitmap(image: ImageProxy): Bitmap {
+    // Handle JPEG format directly
     if (image.format == ImageFormat.JPEG && image.planes.size == 1) {
         val buffer = image.planes[0].buffer
         val bytes = ByteArray(buffer.remaining())
@@ -115,6 +127,7 @@ fun imageProxyToBitmap(image: ImageProxy): Bitmap {
         return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
     }
 
+    // Convert YUV_420_888 format to JPEG, then to Bitmap
     if (image.format == ImageFormat.YUV_420_888 && image.planes.size == 3) {
         val yBuffer = image.planes[0].buffer
         val uBuffer = image.planes[1].buffer
@@ -126,6 +139,7 @@ fun imageProxyToBitmap(image: ImageProxy): Bitmap {
 
         val nv21 = ByteArray(ySize + uSize + vSize)
 
+        // Reconstruct NV21 byte array from YUV planes
         yBuffer.get(nv21, 0, ySize)
         vBuffer.get(nv21, ySize, vSize)
         uBuffer.get(nv21, ySize + vSize, uSize)
@@ -140,6 +154,7 @@ fun imageProxyToBitmap(image: ImageProxy): Bitmap {
     throw IllegalArgumentException("Unsupported image format: ${image.format}, planes: ${image.planes.size}")
 }
 
+// Load the TFLite model file from assets
 fun loadModelFile(context: Context, modelName: String): MappedByteBuffer {
     val fileDescriptor = context.assets.openFd(modelName)
     val inputStream = FileInputStream(fileDescriptor.fileDescriptor)
@@ -147,12 +162,16 @@ fun loadModelFile(context: Context, modelName: String): MappedByteBuffer {
     return fileChannel.map(FileChannel.MapMode.READ_ONLY, fileDescriptor.startOffset, fileDescriptor.declaredLength)
 }
 
+// Run image through TensorFlow Lite model and return predicted label
 fun analyzeImage(bitmap: Bitmap, context: Context): String {
     return try {
         val interpreter = Interpreter(loadModelFile(context, "model.tflite"))
         val labelMap = loadLabelMap(context)
 
+        // Resize bitmap to model input size
         val resizedBitmap = Bitmap.createScaledBitmap(bitmap, 224, 224, true)
+
+        // Prepare input tensor: [1, 224, 224, 3] normalized RGB
         val input = Array(1) { Array(224) { Array(224) { FloatArray(3) } } }
         for (y in 0 until 224) {
             for (x in 0 until 224) {
@@ -163,14 +182,16 @@ fun analyzeImage(bitmap: Bitmap, context: Context): String {
             }
         }
 
+        // Output tensor: [1, 40] for 40 possible labels
         val output = Array(1) { FloatArray(40) }
         interpreter.run(input, output)
 
+        // Get the index of the highest confidence prediction
         val maxIndex = output[0].indices.maxByOrNull { output[0][it] } ?: -1
         val confidence = output[0][maxIndex]
         val label = labelMap[maxIndex] ?: "Unknown Category"
 
-        // 只在置信度较高时返回，否则返回“未知”
+        // Return label if confidence is sufficient
         if (confidence > 0.01f) label
         else "Unrecognizable"
     } catch (e: Exception) {
