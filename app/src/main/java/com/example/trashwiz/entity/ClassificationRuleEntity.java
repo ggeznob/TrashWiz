@@ -1,3 +1,5 @@
+// This class defines the Room Entity for classification rules, mapping items to categories in different regions.
+
 package com.example.trashwiz.entity;
 
 import androidx.room.ColumnInfo;

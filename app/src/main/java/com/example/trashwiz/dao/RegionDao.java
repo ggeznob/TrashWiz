@@ -1,3 +1,5 @@
+// DAO interface for performing CRUD operations on regions in the Room database.
+
 package com.example.trashwiz.dao;
 
 import androidx.lifecycle.LiveData;

@@ -1,12 +1,11 @@
+// This class defines the Room Entity for waste categories, including ID, name, description, and an auto-generated tag.
+
 package com.example.trashwiz.entity;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
-//category_id	INTEGER	主键，自增
-//name	TEXT	分类名称
-//description	TEXT	分类说明
 @Entity(tableName = "categories")
 public class CategoriesEntity {
     @PrimaryKey

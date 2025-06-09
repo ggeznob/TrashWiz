@@ -1,3 +1,5 @@
+// DAO interface for accessing and managing waste category data in the Room database.
+
 package com.example.trashwiz.dao;
 
 import androidx.lifecycle.LiveData;

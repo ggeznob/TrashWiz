@@ -1,3 +1,5 @@
+// Utility class for saving and retrieving string values from SharedPreferences.
+
 package com.example.trashwiz.utils;
 
 import static android.content.Context.MODE_PRIVATE;

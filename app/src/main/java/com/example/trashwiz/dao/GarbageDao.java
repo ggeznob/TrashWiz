@@ -1,3 +1,5 @@
+// DAO interface for managing garbage items in the Room database, supporting CRUD operations and queries by ID or keyword.
+
 package com.example.trashwiz.dao;
 
 import androidx.lifecycle.LiveData;

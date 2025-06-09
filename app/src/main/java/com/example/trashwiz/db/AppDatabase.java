@@ -1,3 +1,5 @@
+// This class defines the Room database setup for the app, including DAOs and entities for waste classification data.
+
 package com.example.trashwiz.db;
 
 import android.content.Context;

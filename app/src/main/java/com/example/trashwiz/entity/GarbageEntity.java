@@ -1,3 +1,5 @@
+// This class defines the Room Entity for garbage items, including item ID, name, and an auto-generated tag for lookup.
+
 package com.example.trashwiz.entity;
 
 import androidx.room.ColumnInfo;

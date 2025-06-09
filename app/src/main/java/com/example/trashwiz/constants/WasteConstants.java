@@ -1,3 +1,5 @@
+// This class defines constants for waste categories, descriptions, and predefined garbage data used throughout the app.
+
 package com.example.trashwiz.constants;
 
 import java.util.ArrayList;

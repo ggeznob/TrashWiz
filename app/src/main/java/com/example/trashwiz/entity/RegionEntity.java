@@ -1,3 +1,5 @@
+// This class defines the Room Entity for regions, storing the region ID and name for location-based garbage classification.
+
 package com.example.trashwiz.entity;
 
 import androidx.room.ColumnInfo;
