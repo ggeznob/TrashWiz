@@ -22,6 +22,7 @@ import com.example.trashwiz.ui.MainScreen
 import com.example.trashwiz.ui.ResultScreen
 import com.example.trashwiz.ui.theme.TrashWizTheme
 import androidx.activity.compose.rememberLauncherForActivityResult
+
 class MainActivity : ComponentActivity() {
     companion object{
         // Global variable to store the selected region name

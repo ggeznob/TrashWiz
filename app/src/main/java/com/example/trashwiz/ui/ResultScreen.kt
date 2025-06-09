@@ -23,6 +23,7 @@ import com.example.trashwiz.entity.GarbageEntity
 import com.example.trashwiz.entity.RegionEntity
 import androidx.compose.ui.graphics.Color
 import com.example.trashwiz.MainActivity
+import androidx.compose.ui.platform.testTag
 
 @Composable
 fun ResultScreen(activity: ComponentActivity,navController: NavController, itemName: String) {
@@ -77,6 +78,7 @@ fun ResultScreen(activity: ComponentActivity,navController: NavController, itemN
             if (!isUnrecognizable) {
                 Text(
                     text = cateName,
+                    modifier = Modifier.testTag("category_name"),
                     style = MaterialTheme.typography.headlineSmall.copy(fontSize = 22.sp),
                     textAlign = TextAlign.Center,
                     fontFamily = dl_regular,
@@ -91,6 +93,7 @@ fun ResultScreen(activity: ComponentActivity,navController: NavController, itemN
                     textAlign = TextAlign.Start,
                     modifier = Modifier
                         .fillMaxWidth()
+                        .testTag("category_desc")
                         .padding(horizontal = 12.dp),
                     fontFamily = dl_regular,
                     color = Color.Black
@@ -163,8 +166,8 @@ fun ResultScreen(activity: ComponentActivity,navController: NavController, itemN
             // Display a dialog if the recognition or query fails
             private fun showTips() {
                 AlertDialog.Builder(activity)
-                    .setTitle("Tips")
-                    .setMessage("No Result")
+                    .setTitle("Oops!")
+                    .setMessage("Sorry, no data on this waste and its classification was found.")
                     .setPositiveButton("OK",null)
                     .setOnDismissListener {
                         navController.navigate("main")

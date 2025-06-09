@@ -25,6 +25,7 @@ import java.nio.channels.FileChannel
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.Executors
+import androidx.compose.ui.platform.testTag
 
 @Composable
 fun CameraScreen(navController: NavController) {
@@ -100,6 +101,7 @@ fun CameraScreen(navController: NavController) {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
+                .testTag("take_picture_button")
         ) {
             Text("Picture and Analyze")
         }

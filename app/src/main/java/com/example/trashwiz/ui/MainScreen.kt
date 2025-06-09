@@ -23,6 +23,7 @@ import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import androidx.compose.ui.graphics.Color
 import com.example.trashwiz.MainActivity
+import androidx.compose.ui.platform.testTag
 
 // Define custom font families
 val dl_regular = FontFamily(Font(R.font.dl_regular))
@@ -62,7 +63,9 @@ fun MainScreen(activity: ComponentActivity, navController: NavController, contex
                 Text("TrashWiz", style = MaterialTheme.typography.headlineMedium, fontFamily = ec_regular, color = Color.Black)
                 // Region dropdown button and menu
                 Box {
-                    OutlinedButton(onClick = { expanded = true }) {
+                    OutlinedButton(onClick = { expanded = true },
+                        modifier = Modifier.testTag("region_button")
+                        ) {
                         Text("Region: $selectedRegion", fontFamily = dl_regular, color = Color.Black)
                         // Save selected region to global variable
                         MainActivity.regionName = selectedRegion
@@ -90,7 +93,7 @@ fun MainScreen(activity: ComponentActivity, navController: NavController, contex
                 value = queryText,
                 onValueChange = { queryText = it },
                 label = { Text("Enter the object's name", fontFamily = dl_regular, color = Color.Black) },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().testTag("query_input"),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
                 keyboardActions = KeyboardActions(
@@ -110,13 +113,13 @@ fun MainScreen(activity: ComponentActivity, navController: NavController, contex
                     var s = queryText
                     // Show warning if input is empty
                     if (TextUtils.isEmpty(s)) {
-                        Toast.makeText(activity,"the keyword must not be empty",Toast.LENGTH_SHORT).show()
+                        Toast.makeText(activity,"The keyword must not be empty",Toast.LENGTH_SHORT).show()
                         return@Button
                     }
                     // Navigate to result screen
                     navController.navigate("result_screen/"+queryText)
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().testTag("search_button")
             ) {
                 Text("Search Result")
             }
@@ -126,7 +129,7 @@ fun MainScreen(activity: ComponentActivity, navController: NavController, contex
                 onClick = {
                     navController.navigate("camera")
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().testTag("identify_button")
             ) {
                 Text("Identify Trash")
             }

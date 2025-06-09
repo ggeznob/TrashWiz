@@ -74,4 +74,25 @@ dependencies {
     // TensorFlow Lite
     implementation(libs.tflite)
 
+    //test
+    // testImplementation("junit:junit:4.13.2")//
+    testImplementation("androidx.test:core:1.5.0")
+
+    // Android Instrumentation 测试相关
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.ui.test.junit4)
+
+    // Mockito (Android Instrumentation 测试用)
+    androidTestImplementation("org.mockito.kotlin:mockito-kotlin:4.1.0")
+    androidTestImplementation("org.mockito:mockito-core:4.11.0")
+    // UIAutomator
+    androidTestImplementation("androidx.test.uiautomator:uiautomator:2.2.0")
+
+
+// 权限测试需要以下依赖
+    androidTestImplementation("androidx.test:rules:1.5.0")
+    androidTestImplementation("androidx.test:runner:1.5.2")
+
 }
