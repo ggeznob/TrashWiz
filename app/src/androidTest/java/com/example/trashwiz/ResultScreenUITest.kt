@@ -6,7 +6,6 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -15,6 +14,10 @@ import androidx.test.rule.GrantPermissionRule
 import androidx.test.uiautomator.UiDevice
 import org.junit.*
 import org.junit.runner.RunWith
+import androidx.test.uiautomator.UiSelector
+import org.junit.Assert.assertTrue
+
+
 
 @RunWith(AndroidJUnit4::class)
 class ResultScreenUITest {
@@ -38,49 +41,49 @@ class ResultScreenUITest {
     fun testSearchResultNavigationForTrulyValue() {
         val testQuery = "Fish Bone"
 
-        // 输入搜索内容
+        // input search content
         composeTestRule.onNodeWithTag("query_input")
             .performTextInput(testQuery)
 
-        // 点击 Search Result 按钮
+        // click Search Result button
         composeTestRule.onNodeWithTag("search_button")
             .performClick()
 
-        // 等待导航完成（确保 UI 稳定）
+        // wait for navigation
         composeTestRule.waitForIdle()
 
-        // 然后再断言传参
+        // then assert para
         composeTestRule.onNodeWithText(testQuery, substring = true).assertExists()
 
 
-        // 断言跳转的发生（你知道 ResultScreen 会展示一个 "Back to Main" 按钮）
+        // assert the page jump（we know ResultScreen will show "Back to Main" button）
         composeTestRule.onNodeWithText("Back to Main").assertExists()
 
-        // 等待 UI 和 LiveData 数据加载
+        // wait for UI and  LiveData loads
         composeTestRule.waitUntil(timeoutMillis = 5_000) {
             composeTestRule.onAllNodesWithTag("category_name").fetchSemanticsNodes().isNotEmpty() &&
                     composeTestRule.onAllNodesWithTag("category_desc").fetchSemanticsNodes().isNotEmpty()
         }
 
-// 验证分类名称是否正确（根据你的数据库内容替换断言文字）
+// Verify if the classification name is correct (replace assertion text based on your database content)
         composeTestRule.onNodeWithTag("category_name")
             .assertExists()
             .assertTextContains("Kitchen Waste") // 举例：你知道 Fish Bone 属于哪个分类
 
-// 验证分类描述是否存在（内容视数据库）
+// verify if classification description exists
         composeTestRule.onNodeWithTag("category_desc")
             .assertExists()
             .assertTextContains("Suitable for composting or biodegradation to reduce landfill burden.", substring = true) // 举例：你知道分类描述的一部分
 
 
-        // 点击 back to main 按钮
+        // click 'back to main' button
         composeTestRule.onNodeWithText("Back to Main")
             .performClick()
 
-        // 等待导航完成（确保 UI 稳定）
+        // wait for navigation（make sure UI stability)
         composeTestRule.waitForIdle()
 
-        // 断言跳转的发生（你知道返回的 MainScreen 会展示一个 "priture and analyze" 按钮）
+        // Claiming the occurrence of jump (we know that the returned MainScreen will display a "price and analyze" button)
         composeTestRule.onNodeWithTag("search_button").assertExists()
 
 
@@ -90,39 +93,39 @@ class ResultScreenUITest {
     fun testSearchResultButtonForWrongVlue() {
         val testQuery = "banana"
 
-        // 输入搜索内容
+        // input search input
         composeTestRule.onNodeWithTag("query_input")
             .performTextInput(testQuery)
 
-        // 点击 Search Result 按钮
+        // click Search Result button
         composeTestRule.onNodeWithTag("search_button")
             .performClick()
 
-        // 等待导航完成（确保 UI 稳定）
+        //wait for navigation
         composeTestRule.waitForIdle()
 
 
-        // 然后再断言传参
+        // then assert the para
         composeTestRule.onNodeWithText(testQuery, substring = true).assertExists()
 
 
-        // 等待弹窗出现
-        composeTestRule.waitUntil(timeoutMillis = 5_000) {
-            composeTestRule.onAllNodesWithText("Sorry, no data on this waste and its classification was found.").fetchSemanticsNodes().isNotEmpty()
-        }
 
-        // 断言弹窗确实显示
-        composeTestRule.onNodeWithText("Sorry, no data on this waste and its classification was found.").assertExists()
+        //  wait for AlertDialog's display
+        val dialogShown = device.findObject(
+            UiSelector().textContains("Sorry, no data on this waste")
+        ).waitForExists(5_000)
 
-        // 点击弹窗的“OK”按钮
-        composeTestRule.onNodeWithText("OK").performClick()
+        assertTrue("Dialog was not shown!", dialogShown)
 
-        // 等待跳转回主页面
+        //  click the OK button of AlertDialog
+        device.findObject(UiSelector().text("OK")).click()
+
+        // wait for jump back to main screen
         composeTestRule.waitUntil(timeoutMillis = 5_000) {
             composeTestRule.onAllNodesWithTag("search_button").fetchSemanticsNodes().isNotEmpty()
         }
 
-        // 断言回到了 MainScreen（通过主页面按钮确认）
+        // assert back to MainScreen（by sserting the exist of search button）
         composeTestRule.onNodeWithTag("search_button").assertExists()
     }
 
